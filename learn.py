@@ -15,7 +15,7 @@ if __name__=="__main__":
   # tf.config.experimental.set_visible_devices([], 'GPU')
   import cv2
   from model import Autoencoder, process_img, convert_to_tf, CustomCallback
-  import pyaudio
+#   import pyaudio
   import plotting
 
   img_size = 64
@@ -53,12 +53,13 @@ if __name__=="__main__":
   parser = argparse.ArgumentParser(description="Either train a model, evaluate an existing one on a dataset or run live.")
   parser.add_argument('--mode', type=str, default="live", help='"train" or "live"')
   parser.add_argument('--video_source', type=str, default="work.mov", help='"0" for internal camera or URL or path to video file.')
-  parser.add_argument('--weights', type=str, default='logs/20220211-174349/weights.3971-0.00510/variables/variables')
+  parser.add_argument('--weights', type=str)  # , default='logs/20220211-174349/weights.3971-0.00510/variables/variables')
   parser.add_argument('--data_dir', type=str, default=None, help='Directory with training data. Only relevant for training.')
 
   args = parser.parse_args()
   print("Got these arguments:", args)
-  autoencoder.load_weights(args.weights)
+  if args.weights:
+    autoencoder.load_weights(args.weights)
 
   if args.mode=='train':
 
@@ -66,10 +67,11 @@ if __name__=="__main__":
     files_ds = tf.data.Dataset.from_tensor_slices(x_files)
     raw_ds = files_ds.map(lambda x: process_img(x, img_size)).cache()
 
-    train_ds = raw_ds.shuffle(100000,reshuffle_each_iteration=True).batch(batch_size)
-    training_data = train_ds.take(math.floor(len(raw_ds)/batch_size))
+    train_items = int(len(raw_ds) * 0.9)
+    train_ds = raw_ds.take(train_items).shuffle(10000 ,reshuffle_each_iteration=True).batch(batch_size)
+    training_data = train_ds.take(math.floor(train_items/batch_size))
     batches_per_epoch = len(training_data)
-    val_ds = raw_ds.shuffle(100000,reshuffle_each_iteration=False, seed=0).take(batch_size).batch(batch_size)
+    val_ds = raw_ds.skip(train_items).shuffle(10000,reshuffle_each_iteration=False, seed=0).take(batch_size).batch(batch_size)
     val_batch = next(iter(val_ds))
 
     logdir = "logs/" + datetime.now().strftime("%Y%m%d-%H%M%S")
