@@ -53,7 +53,7 @@ if __name__=="__main__":
   parser = argparse.ArgumentParser(description="Either train a model, evaluate an existing one on a dataset or run live.")
   parser.add_argument('--mode', type=str, default="live", help='"train" or "live"')
   parser.add_argument('--video_source', type=str, default="work.mov", help='"0" for internal camera or URL or path to video file.')
-  parser.add_argument('--weights', type=str)  # , default='logs/20220211-174349/weights.3971-0.00510/variables/variables')
+  parser.add_argument('--weights', type=str)  # , default='logs/20220311-233556/weights.106--0.00333/variables/variables')
   parser.add_argument('--data_dir', type=str, default=None, help='Directory with training data. Only relevant for training.')
 
   args = parser.parse_args()
